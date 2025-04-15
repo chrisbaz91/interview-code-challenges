@@ -47,31 +47,26 @@ namespace OneBeyondApi
                 "liana@gmail.com"
             );
 
+            var bookOnLoanUntilToday = new BookStock(clayBook)
             {
-
-            var bookOnLoanUntilToday = new BookStock {
-                Book = clayBook,
                 OnLoanTo = daveSmith,
                 LoanEndDate = DateTime.Now.Date
             };
 
-            var bookNotOnLoan = new BookStock
+            var bookNotOnLoan = new BookStock(clayBook)
             {
-                Book = clayBook,
                 OnLoanTo = null,
                 LoanEndDate = null
             };
 
-            var bookOnLoanUntilNextWeek = new BookStock
+            var bookOnLoanUntilNextWeek = new BookStock(agileBook)
             {
-                Book = agileBook,
                 OnLoanTo = lianaJames,
                 LoanEndDate = DateTime.Now.Date.AddDays(7)
             };
 
-            var rustBookStock = new BookStock
+            var rustBookStock = new BookStock(rustBook)
             {
-                Book = rustBook,
                 OnLoanTo = null,
                 LoanEndDate = null
             };
