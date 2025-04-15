@@ -83,8 +83,8 @@ namespace OneBeyondApi
                 LoanEndDate = null
             };
 
-            using (var context = new LibraryContext())
-            {
+            using var context = new LibraryContext();
+
                 context.Authors.Add(ernestMonkjack);
                 context.Authors.Add(sarahKennedy);
                 context.Authors.Add(margaretJones);
@@ -103,8 +103,6 @@ namespace OneBeyondApi
                 context.Catalogue.Add(rustBookStock);
 
                 context.SaveChanges();
-
-            }
         }
     }
 }
