@@ -7,18 +7,9 @@ namespace OneBeyondApi
     {
         public static void SetInitialData()
         {
-            var ernestMonkjack = new Author
-            {
-                Name = "Ernest Monkjack"
-            };
-            var sarahKennedy = new Author
-            {
-                Name = "Sarah Kennedy"
-            };
-            var margaretJones = new Author
-            {
-                Name = "Margaret Jones"
-            };
+            var ernestMonkjack = new Author("Ernest Monkjack");
+            var sarahKennedy = new Author("Sarah Kennedy");
+            var margaretJones = new Author("Margaret Jones");
 
             var clayBook = new Book
             {
