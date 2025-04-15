@@ -9,22 +9,18 @@ namespace OneBeyondApi.DataAccess
         }
         public List<Author> GetAuthors()
         {
-            using (var context = new LibraryContext())
-            {
-                var list = context.Authors
-                    .ToList();
-                return list;
-            }
+            using var context = new LibraryContext();
+            var list = context.Authors
+                .ToList();
+            return list;
         }
 
         public Guid AddAuthor(Author author)
         {
-            using (var context = new LibraryContext())
-            {
-                context.Authors.Add(author);
-                context.SaveChanges();
-                return author.Id;
-            }
+            using var context = new LibraryContext();
+            context.Authors.Add(author);
+            context.SaveChanges();
+            return author.Id;
         }
     }
 }
