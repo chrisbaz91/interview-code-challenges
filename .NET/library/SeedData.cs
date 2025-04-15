@@ -36,16 +36,18 @@ namespace OneBeyondApi
             };
 
             var daveSmith = new Borrower
-            {
-                Name = "Dave Smith",
-                EmailAddress = "dave@smithy.com"
-            };
+            (
+                "Dave Smith",
+                "dave@smithy.com"
+            );
 
             var lianaJames = new Borrower
+            (
+                "Liana James",
+                "liana@gmail.com"
+            );
+
             {
-                Name = "Liana James",
-                EmailAddress = "liana@gmail.com"
-            };
 
             var bookOnLoanUntilToday = new BookStock {
                 Book = clayBook,
