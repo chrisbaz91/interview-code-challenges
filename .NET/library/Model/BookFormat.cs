@@ -6,6 +6,7 @@
         Magazine,
         Periodical,
         Hardback,
-        CompactDisc
+        CompactDisc,
+        GraphicNovel
     }
 }
