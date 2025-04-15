@@ -12,28 +12,28 @@ namespace OneBeyondApi
             var margaretJones = new Author("Margaret Jones");
 
             var clayBook = new Book
-            {
-                Name = "The Importance of Clay",
-                Format = BookFormat.Paperback,
-                Author = ernestMonkjack,
-                ISBN = "1305718181"
-            };
+            (
+                "The Importance of Clay",
+                ernestMonkjack,
+                BookFormat.Paperback,
+                "1305718181"
+            );
 
             var agileBook = new Book
-            {
-                Name = "Agile Project Management - A Primer",
-                Format = BookFormat.Hardback,
-                Author = sarahKennedy,
-                ISBN = "1293910102"
-            };
+            (
+                "Agile Project Management - A Primer",
+                sarahKennedy,
+                BookFormat.Hardback,
+                "1293910102"
+            );
 
             var rustBook = new Book
-            {
-                Name = "Rust Development Cookbook",
-                Format = BookFormat.Paperback,
-                Author = margaretJones,
-                ISBN = "3134324111"
-            };
+            (
+                "Rust Development Cookbook",
+                margaretJones,
+                BookFormat.Paperback,
+                "3134324111"
+            );
 
             var daveSmith = new Borrower
             (
