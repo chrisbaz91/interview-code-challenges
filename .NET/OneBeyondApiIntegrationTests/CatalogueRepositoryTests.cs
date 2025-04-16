@@ -30,7 +30,7 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertRangeAsync(testBookStocks);
 
-            var results = repo.GetLoans();
+            var results = await repo.GetLoans();
 
             Assert.NotNull(results);
             Assert.Empty(results);
@@ -54,7 +54,7 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertRangeAsync(testBookStocks);
 
-            var results = repo.GetLoans();
+            var results = await repo.GetLoans();
 
             Assert.NotNull(results);
             Assert.Equal(testBookStocks.Count, results.Count());
@@ -82,7 +82,7 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertRangeAsync(testBookStocks);
 
-            var results = repo.GetLoans();
+            var results = await repo.GetLoans();
 
             Assert.NotNull(results);
             Assert.Single(results);
@@ -118,14 +118,14 @@ namespace OneBeyondApiIntegrationTests
             await InsertRangeAsync(testBookStocksOnLoan);
             await InsertRangeAsync(testBookStocksNotOnLoan);
 
-            var results = repo.GetLoans();
+            var results = await repo.GetLoans();
 
             Assert.NotNull(results);
             Assert.Equal(testBookStocksOnLoan.Count, results.Count());
-            Assert.Equal(testBorrower.Name, results.First().Borrower);
-            Assert.Equal(testBorrower2.Name, results.Last().Borrower);
-            Assert.Contains(testBook.Name, results.First().Books);
-            Assert.Contains(testBook2.Name, results.Last().Books);
+            Assert.Equal(testBorrower.Name, results.Last().Borrower);
+            Assert.Equal(testBorrower2.Name, results.First().Borrower);
+            Assert.Contains(testBook.Name, results.Last().Books);
+            Assert.Contains(testBook2.Name, results.First().Books);
         }
     }
 }
