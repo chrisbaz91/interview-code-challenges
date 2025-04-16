@@ -197,6 +197,29 @@ namespace OneBeyondApiIntegrationTests
             Assert.NotNull(testBookStock.OnLoanTo);
             Assert.NotNull(testBookStock.LoanEndDate);
             Assert.Contains("success", result);
+            Assert.DoesNotContain("reservation", result);
+        }
+
+        [Fact]
+        public async Task LoanBook_ExistingBookStockButAlreadyOnLoan_CreatesReservationThenReturnsReservationMessage()
+        {
+            await InsertAsync(testBorrower2);
+
+            var testBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(-7)
+            };
+            await InsertAsync(testBookStock);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower2.Name);
+            var result = await repo.LoanBook(request);
+
+            Assert.Equal(testBorrower, testBookStock.OnLoanTo);
+            Assert.Equal(DateTime.Now.Date.AddDays(-7), testBookStock.LoanEndDate);
+            Assert.DoesNotContain("success", result);
+            Assert.Contains("reservation", result);
+            Assert.Contains("position 1", result);
         }
     }
 }

@@ -111,6 +111,20 @@ namespace OneBeyondApi.DataAccess
 
                 await _context.SaveChangesAsync();
             }
+            else
+            {
+                var reservation = new Reservation(book.Id, borrower.Id, DateTime.Now);
+                await _context.Reservations.AddAsync(reservation);
+                await _context.SaveChangesAsync();
+
+                var currentReservations = await _context.Reservations
+                    .Where(x => x.BookId == book.Id)
+                    .CountAsync();
+
+                resultMessage = "There are no copies of this book currently available, " +
+                    "however a reservation has been made - " +
+                    $"you are position {currentReservations} in the queue.";
+            }
 
             return resultMessage;
         }
