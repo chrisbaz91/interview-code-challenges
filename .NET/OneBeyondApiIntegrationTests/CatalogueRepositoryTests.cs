@@ -139,15 +139,16 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertAsync(testBookStock);
 
-            var results = await repo.ReturnBook(new Guid());
+            var request = new LoanRequest(testBook2.Name, testBook2.Author.Name, testBorrower2.Name);
+            var result = await repo.ReturnBook(request);
 
-            Assert.Contains("Error", results);
+            Assert.Contains("Error", result);
             Assert.NotNull(testBookStock.OnLoanTo);
             Assert.NotNull(testBookStock.LoanEndDate);
         }
 
         [Fact]
-        public async Task ReturnLoan_ExistingBookStocksOnLoanWithinLoanDate_NullsBorrowerAndDateWithoutIncreasingFinesThenReturnsSuccessMessageWithoutFinesUpdate()
+        public async Task ReturnBook_ExistingBookStocksOnLoanWithinLoanDate_NullsBorrowerAndDateWithoutIncreasingFinesThenReturnsSuccessMessageWithoutFinesUpdate()
         {
             var testBookStock = new BookStock(testBook)
             {
@@ -156,7 +157,8 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertAsync(testBookStock);
 
-            var result = await repo.ReturnBook(testBookStock.Id);
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower.Name);
+            var result = await repo.ReturnBook(request);
 
             Assert.Null(testBookStock.OnLoanTo);
             Assert.Null(testBookStock.LoanEndDate);
@@ -166,7 +168,7 @@ namespace OneBeyondApiIntegrationTests
         }
 
         [Fact]
-        public async Task ReturnLoan_ExistingBookStocksOnLoanPastLoanDate_NullsBorrowerAndDateAndIncreasesFinesThenReturnsSuccessMessageWithFinesUpdate()
+        public async Task ReturnBook_ExistingBookStocksOnLoanPastLoanDate_NullsBorrowerAndDateAndIncreasesFinesThenReturnsSuccessMessageWithFinesUpdate()
         {
             var testBookStock = new BookStock(testBook)
             {
@@ -175,7 +177,8 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertAsync(testBookStock);
 
-            var result = await repo.ReturnBook(testBookStock.Id);
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower.Name);
+            var result = await repo.ReturnBook(request);
 
             Assert.Null(testBookStock.OnLoanTo);
             Assert.Null(testBookStock.LoanEndDate);

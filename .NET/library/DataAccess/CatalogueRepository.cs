@@ -34,20 +34,32 @@ namespace OneBeyondApi.DataAccess
                 .DistinctBy(x => x.Borrower);
         }
 
-        public async Task<string> ReturnBook(Guid guid)
+        public async Task<string> ReturnBook(LoanRequest request)
         {
             var baseFine = 3;
             var dailyFineRate = 0.75;
             var resultMessage = "Book successfully returned, thank you!";
 
+            var borrower = await context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
+
+            if (borrower == null)
+            {
+                return "Error finding borrower, please try again.";
+            }
+
+            var bookStocks = await SearchCatalogue(new CatalogueSearch(request.BookName, request.Author));
+
+            if (bookStocks == null || !bookStocks.Any())
+            {
+                return "Error finding book, please try again.";
+            }
+
             var bookStock = await context.Catalogue
                 .Include(x => x.OnLoanTo)
-                .Where(x => x.Id == guid)
+                .Where(x => x.OnLoanTo == borrower)
                 .SingleOrDefaultAsync();
 
-            if (bookStock != null
-                && bookStock.LoanEndDate != null
-                && bookStock.OnLoanTo != null)
+            if (bookStock != null && bookStock.LoanEndDate != null)
             {
                 if (bookStock.LoanEndDate < DateTime.Today)
                 {

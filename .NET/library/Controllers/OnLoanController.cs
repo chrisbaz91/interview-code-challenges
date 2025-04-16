@@ -26,9 +26,9 @@ namespace OneBeyondApi.Controllers
 
         [HttpPost]
         [Route("ReturnBook")]
-        public async Task<string> Post(Guid guid)
+        public async Task<string> Post(LoanRequest request)
         {
-            return await _catalogueRepository.ReturnBook(guid);
+            return await _catalogueRepository.ReturnBook(request);
         }
     }
 }
