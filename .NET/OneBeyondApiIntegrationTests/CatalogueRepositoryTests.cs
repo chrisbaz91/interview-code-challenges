@@ -249,6 +249,27 @@ namespace OneBeyondApiIntegrationTests
         }
 
         [Fact]
+        public async Task GetAvailability_OneExistingReservationForOneBookStockNotOnLoan_ReturnsNowAvailable()
+        {
+            await InsertAsync(testBorrower2);
+
+            var testBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = null,
+                LoanEndDate = null
+            };
+            await InsertAsync(testBookStock);
+
+            var reservation = new Reservation(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7));
+            await InsertAsync(reservation);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower2.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains("now available", result);
+        }
+
+        [Fact]
         public async Task GetAvailability_OneExistingReservationForOneBookStockOnLoanUntilToday_ReturnsAvailableDateAsToday()
         {
             await InsertAsync(testBorrower2);

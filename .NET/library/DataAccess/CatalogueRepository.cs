@@ -148,19 +148,6 @@ namespace OneBeyondApi.DataAccess
                 return "Error finding borrower, please try again.";
             }
 
-            var bookStocks = (await SearchCatalogue(new CatalogueSearch(request.BookName, request.Author)))
-                            .OrderBy(x => x.LoanEndDate);
-
-            if (bookStocks == null || !bookStocks.Any())
-            {
-                return "Error finding book, please try again.";
-            }
-
-            if (!bookStocks.Any(x => x.OnLoanTo != null && x.LoanEndDate != null))
-            {
-                return "Error finding loaned book, please try again.";
-            }
-
             var reservations = await context.Reservations
                 .Include(x => x.Book)
                 .Include(x => x.ReservedBy)
@@ -172,6 +159,19 @@ namespace OneBeyondApi.DataAccess
             if (currentReservation == null)
             {
                 return "Error finding reservation, please try again.";
+            }
+
+            var bookStocks = (await SearchCatalogue(new CatalogueSearch(request.BookName, request.Author)))
+                            .OrderBy(x => x.LoanEndDate);
+
+            if (bookStocks == null || !bookStocks.Any())
+            {
+                return "Error finding book, please try again.";
+            }
+
+            if (!bookStocks.Any(x => x.OnLoanTo != null && x.LoanEndDate != null))
+            {
+                return "This book is now available!";
             }
 
             var queuePosition = reservations.Count(x => x.ReservedDate <= currentReservation.ReservedDate);
