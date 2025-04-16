@@ -1,11 +1,12 @@
 ﻿using OneBeyondApi.DataAccess;
 using OneBeyondApi.Model;
+using System.Threading.Tasks;
 
 namespace OneBeyondApi
 {
     public class SeedData
     {
-        public static void SetInitialData()
+        public static async Task SetInitialData()
         {
             var ernestMonkjack = new Author("Ernest Monkjack");
             var sarahKennedy = new Author("Sarah Kennedy");
@@ -73,24 +74,23 @@ namespace OneBeyondApi
 
             using var context = new LibraryContext();
 
-                context.Authors.Add(ernestMonkjack);
-                context.Authors.Add(sarahKennedy);
-                context.Authors.Add(margaretJones);
+            context.Authors.Add(ernestMonkjack);
+            context.Authors.Add(sarahKennedy);
+            context.Authors.Add(margaretJones);
 
+            context.Books.Add(clayBook);
+            context.Books.Add(agileBook);
+            context.Books.Add(rustBook);
 
-                context.Books.Add(clayBook);
-                context.Books.Add(agileBook);
-                context.Books.Add(rustBook);
+            context.Borrowers.Add(daveSmith);
+            context.Borrowers.Add(lianaJames);
 
-                context.Borrowers.Add(daveSmith);
-                context.Borrowers.Add(lianaJames);
+            context.Catalogue.Add(bookOnLoanUntilToday);
+            context.Catalogue.Add(bookNotOnLoan);
+            context.Catalogue.Add(bookOnLoanUntilNextWeek);
+            context.Catalogue.Add(rustBookStock);
 
-                context.Catalogue.Add(bookOnLoanUntilToday);
-                context.Catalogue.Add(bookNotOnLoan);
-                context.Catalogue.Add(bookOnLoanUntilNextWeek);
-                context.Catalogue.Add(rustBookStock);
-
-                context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 }

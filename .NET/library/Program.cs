@@ -10,7 +10,7 @@ builder.Services.AddScoped<IBorrowerRepository, BorrowerRepository>();
 builder.Services.AddScoped<ICatalogueRepository, CatalogueRepository>();
 
 // Seed test data into memory DB
-SeedData.SetInitialData();
+await SeedData.SetInitialData();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
