@@ -20,6 +20,17 @@ namespace OneBeyondApi.DataAccess
             return list;
         }
 
+        public List<BookStock> GetLoans()
+        {
+            using var context = new LibraryContext();
+            var list = context.Catalogue
+                .Include(x => x.Book)
+                .ThenInclude(x => x.Author)
+                .Include(x => x.OnLoanTo)
+                .Where(x => x.LoanEndDate != null && x.OnLoanTo != null)
+                .ToList();
+            return list;
+        }
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
             using var context = new LibraryContext();

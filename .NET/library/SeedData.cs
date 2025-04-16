@@ -154,7 +154,7 @@ namespace OneBeyondApi
 
             await context.Borrowers.AddRangeAsync(daveSmith, lianaJames, chrisBarrett);
 
-            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan,  bookNotOnLoan, rustBookStock, civilWarBookStock, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
+            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan, bookOnLoanUntilNextWeek, rustBookStock, civilWarBookStock, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
 
             await context.SaveChangesAsync();
         }
