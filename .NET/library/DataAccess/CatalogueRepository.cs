@@ -151,7 +151,7 @@ namespace OneBeyondApi.DataAccess
                 return "Error finding book, please try again.";
             }
 
-            if (!bookStocks.Where(x => x.OnLoanTo != null && x.LoanEndDate != null).Any())
+            if (!bookStocks.Any(x => x.OnLoanTo != null && x.LoanEndDate != null))
             {
                 return "Error finding loaned book, please try again.";
             }
@@ -162,14 +162,14 @@ namespace OneBeyondApi.DataAccess
                 .Where(x => x.Book.Name == request.BookName)
                 .ToListAsync();
 
-            var currentReservation = reservations.Where(x => x.ReservedBy.Name == request.Borrower).FirstOrDefault();
+            var currentReservation = reservations.FirstOrDefault(x => x.ReservedBy.Name == request.Borrower);
 
             if (currentReservation == null)
             {
                 return "Error finding reservation, please try again.";
             }
 
-            var queuePosition = reservations.Where(x => x.ReservedDate <= currentReservation.ReservedDate).Count();
+            var queuePosition = reservations.Count(x => x.ReservedDate <= currentReservation.ReservedDate);
             var loanEndDate = new DateTime();
             var availableDate = new DateTime();
             var initialDaysToWait = 0;
@@ -181,24 +181,21 @@ namespace OneBeyondApi.DataAccess
                 // queuePosition-1 to account for next reservations being able to loan at the previous loan end date
                 loanEndDate = bookStocks.Single().LoanEndDate.Value;
                 reservedDaysToWait = 7 * (queuePosition - 1);
-                initialDaysToWait = loanEndDate > DateTime.Now.Date ? (loanEndDate - DateTime.Now.Date).Days : 0;
-                totalDaysToWait = initialDaysToWait + reservedDaysToWait;
-                availableDate = DateTime.Now.Date.AddDays(totalDaysToWait);
             }
             else
             {
                 // two queues for two stocks
-                // half queue position rounded up to get single queue position
-                reservedDaysToWait = 7 * ((int)Math.Ceiling((double)queuePosition / 2) - 1);
                 var earlierBookStockDate = bookStocks.First().LoanEndDate.Value;
                 var laterBookStockDate = bookStocks.Last().LoanEndDate.Value;
                 // odd position gets earlier stock, even position gets later stock
-                var earlier = queuePosition % 2 != 0;
-                loanEndDate = earlier ? earlierBookStockDate : laterBookStockDate;
-                initialDaysToWait = loanEndDate > DateTime.Now.Date ? (loanEndDate - DateTime.Now.Date).Days : 0;
-                totalDaysToWait = initialDaysToWait + reservedDaysToWait;
-                availableDate = DateTime.Now.Date.AddDays(totalDaysToWait);
+                loanEndDate = queuePosition % 2 != 0 ? earlierBookStockDate : laterBookStockDate;
+                // half queue position rounded up to get single queue position
+                reservedDaysToWait = 7 * ((int)Math.Ceiling((double)queuePosition / 2) - 1);
             }
+
+            initialDaysToWait = loanEndDate > DateTime.Now.Date ? (loanEndDate - DateTime.Now.Date).Days : 0;
+            totalDaysToWait = initialDaysToWait + reservedDaysToWait;
+            availableDate = DateTime.Now.Date.AddDays(totalDaysToWait);
 
             return $"This book will be available for you " +
                 $"{(totalDaysToWait > 0
