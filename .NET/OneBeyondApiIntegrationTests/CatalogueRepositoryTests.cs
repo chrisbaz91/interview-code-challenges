@@ -131,50 +131,56 @@ namespace OneBeyondApiIntegrationTests
         [Fact]
         public async Task ReturnBook_IncorrectReturnInfo_ReturnsErrorMessage()
         {
-            var testBookStocks = new List<BookStock>()
+            var testBookStock = new BookStock(testBook)
             {
-                new(testBook)
-                {
-                    OnLoanTo = testBorrower,
-                    LoanEndDate = DateTime.Now.Date.AddDays(7)
-                },
-                new(testBook2)
-                {
-                    OnLoanTo = testBorrower2,
-                    LoanEndDate = DateTime.Now.Date.AddDays(7)
-                }
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(7)
             };
-            await InsertRangeAsync(testBookStocks);
+            await InsertAsync(testBookStock);
 
             var results = await repo.ReturnBook(new Guid());
 
             Assert.Contains("Error", results);
+            Assert.NotNull(testBookStock.OnLoanTo);
+            Assert.NotNull(testBookStock.LoanEndDate);
         }
 
         [Fact]
-        public async Task ReturnLoan_ExistingBookStocksOnLoan_NullsBorrowerAndDateThenReturnsSuccessMessage()
+        public async Task ReturnLoan_ExistingBookStocksOnLoanWithinLoanDate_NullsBorrowerAndDateWithoutIncreasingFinesThenReturnsSuccessMessageWithoutFinesUpdate()
         {
-            var testBookStocks = new List<BookStock>()
+            var testBookStock = new BookStock(testBook)
             {
-                new(testBook)
-                {
-                    OnLoanTo = testBorrower,
-                    LoanEndDate = DateTime.Now.Date.AddDays(7)
-                },
-                new(testBook2)
-                {
-                    OnLoanTo = testBorrower2,
-                    LoanEndDate = DateTime.Now.Date.AddDays(7)
-                }
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(7)
             };
-            await InsertRangeAsync(testBookStocks);
+            await InsertAsync(testBookStock);
 
-            var result = await repo.ReturnBook(testBookStocks.First().Id);
+            var result = await repo.ReturnBook(testBookStock.Id);
 
-            var updatedBookStock = context.Catalogue.First(x => x.Id == testBookStocks.First().Id);
-            Assert.Null(updatedBookStock.OnLoanTo);
-            Assert.Null(updatedBookStock.LoanEndDate);
+            Assert.Null(testBookStock.OnLoanTo);
+            Assert.Null(testBookStock.LoanEndDate);
+            Assert.Equal(0, testBorrower.FinesOwed);
             Assert.Contains("success", result);
+            Assert.DoesNotContain("fine", result);
+        }
+
+        [Fact]
+        public async Task ReturnLoan_ExistingBookStocksOnLoanPastLoanDate_NullsBorrowerAndDateAndIncreasesFinesThenReturnsSuccessMessageWithFinesUpdate()
+        {
+            var testBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(-7)
+            };
+            await InsertAsync(testBookStock);
+
+            var result = await repo.ReturnBook(testBookStock.Id);
+
+            Assert.Null(testBookStock.OnLoanTo);
+            Assert.Null(testBookStock.LoanEndDate);
+            Assert.Equal(3 + 0.75 * 7, testBorrower.FinesOwed);
+            Assert.Contains("success", result);
+            Assert.Contains("fine", result);
         }
     }
 }

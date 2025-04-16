@@ -43,18 +43,37 @@ namespace OneBeyondApi.DataAccess
 
         public async Task<string> ReturnBook(Guid guid)
         {
+            var baseFine = 3;
+            var dailyFineRate = 0.75;
+            var resultMessage = "Book successfully returned, thank you!";
+
             var bookStock = await _context.Catalogue
                 .Include(x => x.OnLoanTo)
-                .SingleOrDefaultAsync(x => x.Id == guid);
+                .Where(x => x.Id == guid)
+                .SingleOrDefaultAsync();
 
             if (bookStock != null
                 && bookStock.LoanEndDate != null
                 && bookStock.OnLoanTo != null)
             {
+                if (bookStock.LoanEndDate < DateTime.Today)
+                {
+                    var daysOverdue = (DateTime.Today - bookStock.LoanEndDate).Value.Days;
+                    var totalFine = baseFine + daysOverdue * dailyFineRate;
+
+                    bookStock.OnLoanTo.FinesOwed += totalFine;
+
+                    resultMessage +=
+                        $" - due to being {daysOverdue} days overdue, " +
+                        $"you owe {totalFine:C}, " +
+                        $"your new fines total is {bookStock.OnLoanTo.FinesOwed:C}.";
+                }
+
                 bookStock.LoanEndDate = null;
                 bookStock.OnLoanTo = null;
                 await _context.SaveChangesAsync();
-                return "Book successfully returned, thank you!";
+
+                return resultMessage;
             }
 
             return "Error finding loan, please try again.";
