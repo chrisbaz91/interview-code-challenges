@@ -9,5 +9,7 @@ namespace OneBeyondApi.DataAccess
         public Task<List<BookStock>> SearchCatalogue(CatalogueSearch search);
 
         public Task<IEnumerable<BorrowerLoans>> GetLoans();
+
+        public Task<string> ReturnBook(Guid guid);
     }
 }
