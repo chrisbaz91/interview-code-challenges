@@ -31,21 +31,14 @@ namespace OneBeyondApi.DataAccess
                 .Where(x => x.LoanEndDate != null && x.OnLoanTo != null)
                 .ToList();
 
-            var borrowerLoans = new List<BorrowerLoans>();
-
-            var names = list.Select(x => x.OnLoanTo.Name).Distinct();
-
-            foreach(var name in names)
-            {
-                borrowerLoans.Add(
-                    new BorrowerLoans(name, 
-                        list.Where(x => x.OnLoanTo.Name == name)
-                            .Select(x => x.Book.Name)
+            return list.Select(x =>
+                new BorrowerLoans(x.OnLoanTo.Name,
+                    list.Where(y => y.OnLoanTo == x.OnLoanTo)
+                        .Select(z => z.Book.Name)
                     )
-                );
+                    )
+                .DistinctBy(x => x.Borrower);
             }
-            return borrowerLoans;
-        }
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
             using var context = new LibraryContext();
