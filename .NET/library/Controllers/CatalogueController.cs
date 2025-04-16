@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OneBeyondApi.DataAccess;
 using OneBeyondApi.Model;
-using System.Collections;
 
 namespace OneBeyondApi.Controllers
 {
@@ -27,9 +26,9 @@ namespace OneBeyondApi.Controllers
 
         [HttpPost]
         [Route("SearchCatalogue")]
-        public IList<BookStock> Post(CatalogueSearch search)
+        public async Task<IList<BookStock>> Post(CatalogueSearch search)
         {
-            return _catalogueRepository.SearchCatalogue(search);
+            return await _catalogueRepository.SearchCatalogue(search);
         }
     }
 }

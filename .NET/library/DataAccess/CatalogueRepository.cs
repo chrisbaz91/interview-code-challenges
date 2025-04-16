@@ -8,37 +8,40 @@ namespace OneBeyondApi.DataAccess
         public CatalogueRepository()
         {
         }
+
         public List<BookStock> GetCatalogue()
         {
             using var context = new LibraryContext();
-                var list = context.Catalogue
-                    .Include(x => x.Book)
-                    .ThenInclude(x => x.Author)
-                    .Include(x => x.OnLoanTo)
-                    .ToList();
-                return list;
-            }
+            var list = context.Catalogue
+                .Include(x => x.Book)
+                .ThenInclude(x => x.Author)
+                .Include(x => x.OnLoanTo)
+                .ToList();
+            return list;
+        }
 
-        public List<BookStock> SearchCatalogue(CatalogueSearch search)
+        public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
             using var context = new LibraryContext();
-                var list = context.Catalogue
-                    .Include(x => x.Book)
-                    .ThenInclude(x => x.Author)
-                    .Include(x => x.OnLoanTo)
-                    .AsQueryable();
+            var list = context.Catalogue
+                .Include(x => x.Book)
+                .ThenInclude(x => x.Author)
+                .Include(x => x.OnLoanTo)
+                .AsQueryable();
 
-                if (search != null)
+            if (search != null)
+            {
+                if (!string.IsNullOrEmpty(search.Author))
                 {
-                    if (!string.IsNullOrEmpty(search.Author)) {
-                        list = list.Where(x => x.Book.Author.Name.Contains(search.Author));
-                    }
-                    if (!string.IsNullOrEmpty(search.BookName)) {
-                        list = list.Where(x => x.Book.Name.Contains(search.BookName));
-                    }
+                    list = list.Where(x => x.Book.Author.Name.Contains(search.Author));
                 }
-                    
-                return list.ToList();
+                if (!string.IsNullOrEmpty(search.BookName))
+                {
+                    list = list.Where(x => x.Book.Name.Contains(search.BookName));
+                }
             }
+
+            return await list.ToListAsync();
         }
     }
+}
