@@ -3,25 +3,17 @@ using OneBeyondApi.Model;
 
 namespace OneBeyondApiIntegrationTests
 {
-    public class CatalogueRepositoryTests : IDisposable
+    public class CatalogueRepositoryTests : IntegrationTest
     {
         private readonly CatalogueRepository repo;
-        private readonly LibraryContext context;
         private readonly Book testBook;
         private readonly Borrower testBorrower;
 
         public CatalogueRepositoryTests()
         {
             repo = new();
-            context = new();
             testBook = new("TestBook", new Author("TestAuthor"), BookFormat.Paperback, "1111");
             testBorrower = new("TestBorrower", "test@borrower.com");
-        }
-
-        public async void Dispose()
-        {
-            context.Catalogue.RemoveRange(context.Catalogue);
-            await context.SaveChangesAsync();
         }
 
         [Fact]
@@ -32,8 +24,7 @@ namespace OneBeyondApiIntegrationTests
                 new(testBook),
                 new(testBook)
             };
-            await context.Catalogue.AddRangeAsync(testBookStocks);
-            await context.SaveChangesAsync();
+            await InsertRangeAsync(testBookStocks);
 
             var results = repo.GetLoans();
 
@@ -57,8 +48,7 @@ namespace OneBeyondApiIntegrationTests
                     LoanEndDate = DateTime.Now.Date.AddDays(7)
                 }
             };
-            await context.Catalogue.AddRangeAsync(testBookStocks);
-            await context.SaveChangesAsync();
+            await InsertRangeAsync(testBookStocks);
 
             var results = repo.GetLoans();
 
@@ -90,9 +80,8 @@ namespace OneBeyondApiIntegrationTests
                 new(testBook)
             };
 
-            await context.Catalogue.AddRangeAsync(testBookStocksOnLoan);
-            await context.Catalogue.AddRangeAsync(testBookStocksNotOnLoan);
-            await context.SaveChangesAsync();
+            await InsertRangeAsync(testBookStocksOnLoan);
+            await InsertRangeAsync(testBookStocksNotOnLoan);
 
             var results = repo.GetLoans();
 
