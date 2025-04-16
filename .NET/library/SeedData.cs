@@ -148,35 +148,13 @@ namespace OneBeyondApi
 
             using var context = new LibraryContext();
 
-            context.Authors.Add(ernestMonkjack);
-            context.Authors.Add(sarahKennedy);
-            context.Authors.Add(margaretJones);
-            context.Authors.Add(markMillar);
-            context.Authors.Add(brianMichaelBendis);
-            context.Authors.Add(jMStraczynski);
-            context.Authors.Add(johnathanHickman);
+            await context.Authors.AddRangeAsync(ernestMonkjack, sarahKennedy, margaretJones, markMillar, brianMichaelBendis, jMStraczynski, johnathanHickman);
 
-            context.Books.Add(clayBook);
-            context.Books.Add(agileBook);
-            context.Books.Add(rustBook);
-            context.Books.Add(civilWarBook);
-            context.Books.Add(avxBook);
-            context.Books.Add(spiderManBook);
-            context.Books.Add(infinityBook);
+            await context.Books.AddRangeAsync(clayBook, agileBook, rustBook,  civilWarBook, avxBook, spiderManBook, infinityBook);
 
-            context.Borrowers.Add(daveSmith);
-            context.Borrowers.Add(lianaJames);
-            context.Borrowers.Add(chrisBarrett);
+            await context.Borrowers.AddRangeAsync(daveSmith, lianaJames, chrisBarrett);
 
-            context.Catalogue.Add(bookOnLoanUntilToday);
-            context.Catalogue.Add(bookNotOnLoan);
-            context.Catalogue.Add(bookOnLoanUntilNextWeek);
-            context.Catalogue.Add(rustBookStock);
-            context.Catalogue.Add(civilWarBookStock);
-            context.Catalogue.Add(avxBookStock);
-            context.Catalogue.Add(avxBookStock2);
-            context.Catalogue.Add(spiderManBookStock);
-            context.Catalogue.Add(infinityBookStock);
+            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan,  bookNotOnLoan, rustBookStock, civilWarBookStock, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
 
             await context.SaveChangesAsync();
         }
