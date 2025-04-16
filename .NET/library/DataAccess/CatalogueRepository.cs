@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OneBeyondApi.Model;
-using System.Linq;
 
 namespace OneBeyondApi.DataAccess
 {
@@ -56,8 +55,7 @@ namespace OneBeyondApi.DataAccess
 
             var bookStock = await context.Catalogue
                 .Include(x => x.OnLoanTo)
-                .Where(x => x.OnLoanTo == borrower)
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync(x => x.OnLoanTo == borrower);
 
             if (bookStock != null && bookStock.LoanEndDate != null)
             {
@@ -104,13 +102,11 @@ namespace OneBeyondApi.DataAccess
 
             var book = await context.Books.SingleAsync(x => x.Id == bookStocks.First().Book.Id);
 
-            var availableBookStock = bookStocks
-                .Where(x => x.LoanEndDate == null && x.OnLoanTo == null)
-                .FirstOrDefault();
+            var availableBookStock = bookStocks.FirstOrDefault(x => x.LoanEndDate == null && x.OnLoanTo == null);
 
             if (availableBookStock != null)
             {
-                var currentBookStock = await context.Catalogue.Where(x => x.Id == availableBookStock.Id).SingleAsync();
+                var currentBookStock = await context.Catalogue.SingleAsync(x => x.Id == availableBookStock.Id);
                 currentBookStock.LoanEndDate = DateTime.Now.AddDays(7);
                 currentBookStock.OnLoanTo = borrower;
 
@@ -128,8 +124,7 @@ namespace OneBeyondApi.DataAccess
                 await context.SaveChangesAsync();
 
                 var currentReservations = await context.Reservations
-                    .Where(x => x.BookId == book.Id)
-                    .CountAsync();
+                    .CountAsync(x => x.BookId == book.Id);
 
                 resultMessage = "There are no copies of this book currently available, " +
                     "however a reservation has been made - " +
