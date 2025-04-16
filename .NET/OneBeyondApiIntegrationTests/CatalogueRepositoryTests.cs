@@ -58,10 +58,10 @@ namespace OneBeyondApiIntegrationTests
 
             Assert.NotNull(results);
             Assert.Equal(testBookStocks.Count, results.Count());
-            Assert.Contains(testBorrower.Name, results.Last().Borrower);
-            Assert.Equal(testBorrower2.Name, results.First().Borrower);
-            Assert.Contains(testBook.Name, results.Last().Books);
-            Assert.Contains(testBook2.Name, results.First().Books);
+            Assert.Contains(testBorrower.Name, results.First().Borrower);
+            Assert.Equal(testBorrower2.Name, results.Last().Borrower);
+            Assert.Contains(testBook.Name, results.First().Books);
+            Assert.Contains(testBook2.Name, results.Last().Books);
         }
 
         [Fact]
@@ -122,10 +122,10 @@ namespace OneBeyondApiIntegrationTests
 
             Assert.NotNull(results);
             Assert.Equal(testBookStocksOnLoan.Count, results.Count());
-            Assert.Equal(testBorrower.Name, results.Last().Borrower);
-            Assert.Equal(testBorrower2.Name, results.First().Borrower);
-            Assert.Contains(testBook.Name, results.Last().Books);
-            Assert.Contains(testBook2.Name, results.First().Books);
+            Assert.Equal(testBorrower.Name, results.First().Borrower);
+            Assert.Equal(testBorrower2.Name, results.Last().Borrower);
+            Assert.Contains(testBook.Name, results.First().Books);
+            Assert.Contains(testBook2.Name, results.Last().Books);
         }
 
         [Fact]
