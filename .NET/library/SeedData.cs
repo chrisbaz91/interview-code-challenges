@@ -119,7 +119,13 @@ namespace OneBeyondApi
             var civilWarBookStock = new BookStock(civilWarBook)
             {
                 OnLoanTo = chrisBarrett,
-                LoanEndDate = DateTime.Now.Date.AddDays(-7)
+                LoanEndDate = DateTime.Now.Date.AddDays(7)
+            };
+
+            var civilWarBookStock2 = new BookStock(civilWarBook)
+            {
+                OnLoanTo = lianaJames,
+                LoanEndDate = DateTime.Now.Date.AddDays(5)
             };
 
             var avxBookStock = new BookStock(avxBook)
@@ -154,7 +160,15 @@ namespace OneBeyondApi
 
             await context.Borrowers.AddRangeAsync(daveSmith, lianaJames, chrisBarrett);
 
-            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan, bookOnLoanUntilNextWeek, rustBookStock, civilWarBookStock, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
+            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan, bookOnLoanUntilNextWeek, rustBookStock, civilWarBookStock, civilWarBookStock2, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
+
+            await context.SaveChangesAsync();
+
+            var civilWarReservation = new Reservation(civilWarBook.Id, daveSmith.Id, DateTime.Now.Date.AddDays(-7));
+            var civilWarReservation2 = new Reservation(civilWarBook.Id, lianaJames.Id, DateTime.Now.Date.AddDays(-6));
+            var agileReservation = new Reservation(agileBook.Id, daveSmith.Id, DateTime.Now.Date.AddDays(-7));
+
+            await context.Reservations.AddRangeAsync(civilWarReservation, civilWarReservation2, agileReservation);
 
             await context.SaveChangesAsync();
         }
