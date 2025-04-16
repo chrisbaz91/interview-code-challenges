@@ -221,6 +221,7 @@ namespace OneBeyondApiIntegrationTests
             Assert.DoesNotContain("success", result);
             Assert.Contains("reservation", result);
             Assert.Contains("position 1", result);
+            Assert.NotNull(await context.Reservations.SingleOrDefaultAsync(x => x.Book == testBook && x.ReservedBy == testBorrower2));
         }
 
         [Fact]
