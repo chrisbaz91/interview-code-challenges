@@ -182,5 +182,21 @@ namespace OneBeyondApiIntegrationTests
             Assert.Contains("success", result);
             Assert.Contains("fine", result);
         }
+
+        [Fact]
+        public async Task LoanBook_ExistingBookStock_SetsBorrowerAndDateThenReturnsSuccessMessage()
+        {
+            await InsertAsync(testBorrower);
+
+            var testBookStock = new BookStock(testBook);
+            await InsertAsync(testBookStock);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower.Name);
+            var result = await repo.LoanBook(request);
+
+            Assert.NotNull(testBookStock.OnLoanTo);
+            Assert.NotNull(testBookStock.LoanEndDate);
+            Assert.Contains("success", result);
+        }
     }
 }

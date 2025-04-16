@@ -11,5 +11,7 @@ namespace OneBeyondApi.DataAccess
         public Task<IEnumerable<BorrowerLoans>> GetLoans();
 
         public Task<string> ReturnBook(Guid guid);
+
+        public Task<string> LoanBook(LoanRequest request);
     }
 }

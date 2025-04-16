@@ -78,6 +78,42 @@ namespace OneBeyondApi.DataAccess
 
             return "Error finding loan, please try again.";
         }
+
+        public async Task<string> LoanBook(LoanRequest request)
+        {
+            var resultMessage = "Book successfully loaned, thank you!";
+
+            var borrower = await _context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
+
+            if (borrower == null)
+            {
+                return "Error finding borrower, please try again.";
+            }
+
+            var bookStocks = await SearchCatalogue(new CatalogueSearch(request.BookName, request.Author));
+
+            if (bookStocks == null || !bookStocks.Any())
+            {
+                return "Error finding book, please try again.";
+            }
+
+            var book = await _context.Books.SingleAsync(x => x.Id == bookStocks.First().Book.Id);
+
+            var availableBookStock = bookStocks
+                .Where(x => x.LoanEndDate == null && x.OnLoanTo == null)
+                .FirstOrDefault();
+
+            if (availableBookStock != null)
+            {
+                var currentBookStock = await _context.Catalogue.Where(x => x.Id == availableBookStock.Id).SingleAsync();
+                currentBookStock.LoanEndDate = DateTime.Now.AddDays(7);
+                currentBookStock.OnLoanTo = borrower;
+
+                await _context.SaveChangesAsync();
+            }
+
+            return resultMessage;
+        }
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
             var list = _context.Catalogue
