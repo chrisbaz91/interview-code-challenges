@@ -1,18 +1,21 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OneBeyondApi.Model;
+using System.Linq;
 
 namespace OneBeyondApi.DataAccess
 {
     public class CatalogueRepository : ICatalogueRepository
     {
-        public CatalogueRepository()
+        private readonly LibraryContext _context;
+
+        public CatalogueRepository(LibraryContext context)
         {
+            _context = context;
         }
 
         public List<BookStock> GetCatalogue()
         {
-            using var context = new LibraryContext();
-            var list = context.Catalogue
+            var list = _context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
@@ -22,9 +25,7 @@ namespace OneBeyondApi.DataAccess
 
         public async Task<IEnumerable<BorrowerLoans>> GetLoans()
         {
-            using var context = new LibraryContext();
-
-            var list = await context.Catalogue
+            var list = await _context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
@@ -42,9 +43,7 @@ namespace OneBeyondApi.DataAccess
 
         public async Task<string> ReturnBook(Guid guid)
         {
-            using var context = new LibraryContext();
-
-            var bookStock = await context.Catalogue
+            var bookStock = await _context.Catalogue
                 .Include(x => x.OnLoanTo)
                 .SingleOrDefaultAsync(x => x.Id == guid);
 
@@ -54,7 +53,7 @@ namespace OneBeyondApi.DataAccess
             {
                 bookStock.LoanEndDate = null;
                 bookStock.OnLoanTo = null;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 return "Book successfully returned, thank you!";
             }
 
@@ -62,8 +61,7 @@ namespace OneBeyondApi.DataAccess
         }
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
-            using var context = new LibraryContext();
-            var list = context.Catalogue
+            var list = _context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)

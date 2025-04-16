@@ -13,7 +13,7 @@ namespace OneBeyondApiIntegrationTests
 
         public CatalogueRepositoryTests()
         {
-            repo = new();
+            repo = new(context);
             testBook = new("TestBook", new Author("TestAuthor"), BookFormat.Paperback, "1111");
             testBook2 = new("TestBook2", new Author("TestAuthor2"), BookFormat.Hardback, "1112");
             testBorrower = new("TestBorrower", "test@borrower.com");
