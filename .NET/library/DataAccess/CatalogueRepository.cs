@@ -4,18 +4,11 @@ using System.Linq;
 
 namespace OneBeyondApi.DataAccess
 {
-    public class CatalogueRepository : ICatalogueRepository
+    public class CatalogueRepository(LibraryContext context) : ICatalogueRepository
     {
-        private readonly LibraryContext _context;
-
-        public CatalogueRepository(LibraryContext context)
-        {
-            _context = context;
-        }
-
         public List<BookStock> GetCatalogue()
         {
-            var list = _context.Catalogue
+            var list = context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
@@ -25,7 +18,7 @@ namespace OneBeyondApi.DataAccess
 
         public async Task<IEnumerable<BorrowerLoans>> GetLoans()
         {
-            var list = await _context.Catalogue
+            var list = await context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
@@ -47,7 +40,7 @@ namespace OneBeyondApi.DataAccess
             var dailyFineRate = 0.75;
             var resultMessage = "Book successfully returned, thank you!";
 
-            var bookStock = await _context.Catalogue
+            var bookStock = await context.Catalogue
                 .Include(x => x.OnLoanTo)
                 .Where(x => x.Id == guid)
                 .SingleOrDefaultAsync();
@@ -71,7 +64,7 @@ namespace OneBeyondApi.DataAccess
 
                 bookStock.LoanEndDate = null;
                 bookStock.OnLoanTo = null;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return resultMessage;
             }
@@ -83,7 +76,7 @@ namespace OneBeyondApi.DataAccess
         {
             var resultMessage = "Book successfully loaned, thank you!";
 
-            var borrower = await _context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
+            var borrower = await context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
 
             if (borrower == null)
             {
@@ -97,7 +90,7 @@ namespace OneBeyondApi.DataAccess
                 return "Error finding book, please try again.";
             }
 
-            var book = await _context.Books.SingleAsync(x => x.Id == bookStocks.First().Book.Id);
+            var book = await context.Books.SingleAsync(x => x.Id == bookStocks.First().Book.Id);
 
             var availableBookStock = bookStocks
                 .Where(x => x.LoanEndDate == null && x.OnLoanTo == null)
@@ -105,24 +98,24 @@ namespace OneBeyondApi.DataAccess
 
             if (availableBookStock != null)
             {
-                var currentBookStock = await _context.Catalogue.Where(x => x.Id == availableBookStock.Id).SingleAsync();
+                var currentBookStock = await context.Catalogue.Where(x => x.Id == availableBookStock.Id).SingleAsync();
                 currentBookStock.LoanEndDate = DateTime.Now.AddDays(7);
                 currentBookStock.OnLoanTo = borrower;
 
-                var currentReservation = await _context.Reservations.SingleOrDefaultAsync(x => x.ReservedBy == borrower && x.Book == book);
+                var currentReservation = await context.Reservations.SingleOrDefaultAsync(x => x.ReservedBy == borrower && x.Book == book);
                 if (currentReservation != null)
                 {
-                    _context.Remove(currentReservation);
+                    context.Remove(currentReservation);
                 }
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             else
             {
                 var reservation = new Reservation(book.Id, borrower.Id, DateTime.Now);
-                await _context.Reservations.AddAsync(reservation);
-                await _context.SaveChangesAsync();
+                await context.Reservations.AddAsync(reservation);
+                await context.SaveChangesAsync();
 
-                var currentReservations = await _context.Reservations
+                var currentReservations = await context.Reservations
                     .Where(x => x.BookId == book.Id)
                     .CountAsync();
 
@@ -136,7 +129,7 @@ namespace OneBeyondApi.DataAccess
 
         public async Task<string> GetAvailability(LoanRequest request)
         {
-            var borrower = await _context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
+            var borrower = await context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
 
             if (borrower == null)
             {
@@ -156,7 +149,7 @@ namespace OneBeyondApi.DataAccess
                 return "Error finding loaned book, please try again.";
             }
 
-            var reservations = await _context.Reservations
+            var reservations = await context.Reservations
                 .Include(x => x.Book)
                 .Include(x => x.ReservedBy)
                 .Where(x => x.Book.Name == request.BookName)
@@ -205,7 +198,7 @@ namespace OneBeyondApi.DataAccess
 
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
-            var list = _context.Catalogue
+            var list = context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
