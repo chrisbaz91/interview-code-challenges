@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OneBeyondApi.DataAccess;
 using OneBeyondApi.Model;
 
@@ -220,6 +221,27 @@ namespace OneBeyondApiIntegrationTests
             Assert.DoesNotContain("success", result);
             Assert.Contains("reservation", result);
             Assert.Contains("position 1", result);
+        }
+
+        [Fact]
+        public async Task LoanBook_ExistingBookStockAndExistingReservation_SetsBorrowerAndDateAndRemovesCurrentReservationThenReturnsSuccessMessage()
+        {
+            await InsertAsync(testBorrower);
+
+            var testBookStock = new BookStock(testBook);
+            await InsertAsync(testBookStock);
+
+            var reservation = new Reservation(testBook.Id, testBorrower.Id, DateTime.Now.Date.AddDays(-7));
+            await InsertAsync(reservation);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower.Name);
+            var result = await repo.LoanBook(request);
+
+            Assert.NotNull(testBookStock.OnLoanTo);
+            Assert.NotNull(testBookStock.LoanEndDate);
+            Assert.Contains("success", result);
+            Assert.DoesNotContain("reservation", result);
+            Assert.Empty(context.Reservations);
         }
 
         [Fact]

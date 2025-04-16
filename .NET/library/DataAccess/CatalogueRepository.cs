@@ -109,6 +109,11 @@ namespace OneBeyondApi.DataAccess
                 currentBookStock.LoanEndDate = DateTime.Now.AddDays(7);
                 currentBookStock.OnLoanTo = borrower;
 
+                var currentReservation = await _context.Reservations.SingleOrDefaultAsync(x => x.ReservedBy == borrower && x.Book == book);
+                if (currentReservation != null)
+                {
+                    _context.Remove(currentReservation);
+                }
                 await _context.SaveChangesAsync();
             }
             else
