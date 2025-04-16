@@ -7,13 +7,17 @@ namespace OneBeyondApiIntegrationTests
     {
         private readonly CatalogueRepository repo;
         private readonly Book testBook;
+        private readonly Book testBook2;
         private readonly Borrower testBorrower;
+        private readonly Borrower testBorrower2;
 
         public CatalogueRepositoryTests()
         {
             repo = new();
             testBook = new("TestBook", new Author("TestAuthor"), BookFormat.Paperback, "1111");
+            testBook2 = new("TestBook2", new Author("TestAuthor2"), BookFormat.Hardback, "1112");
             testBorrower = new("TestBorrower", "test@borrower.com");
+            testBorrower2 = new("TestBorrower2", "test@borrower2.com");
         }
 
         [Fact]
@@ -33,7 +37,7 @@ namespace OneBeyondApiIntegrationTests
         }
 
         [Fact]
-        public async Task GetLoans_ExistingBookStocksOnLoan_ReturnsAllBookStocks()
+        public async Task GetLoans_ExistingBookStocksOnLoan_ReturnsAllBorrowerLoans()
         {
             var testBookStocks = new List<BookStock>()
             {
@@ -42,7 +46,35 @@ namespace OneBeyondApiIntegrationTests
                     OnLoanTo = testBorrower,
                     LoanEndDate = DateTime.Now.Date.AddDays(7)
                 },
+                new(testBook2)
+                {
+                    OnLoanTo = testBorrower2,
+                    LoanEndDate = DateTime.Now.Date.AddDays(7)
+                }
+            };
+            await InsertRangeAsync(testBookStocks);
+
+            var results = repo.GetLoans();
+
+            Assert.NotNull(results);
+            Assert.Equal(testBookStocks.Count, results.Count());
+            Assert.Contains(testBorrower.Name, results.Last().Borrower);
+            Assert.Equal(testBorrower2.Name, results.First().Borrower);
+            Assert.Contains(testBook.Name, results.Last().Books);
+            Assert.Contains(testBook2.Name, results.First().Books);
+        }
+
+        [Fact]
+        public async Task GetLoans_ExistingBookStocksOnLoanWithSameBorrower_ReturnsOneBorrowerLoan()
+        {
+            var testBookStocks = new List<BookStock>()
+            {
                 new(testBook)
+                {
+                    OnLoanTo = testBorrower,
+                    LoanEndDate = DateTime.Now.Date.AddDays(7)
+                },
+                new(testBook2)
                 {
                     OnLoanTo = testBorrower,
                     LoanEndDate = DateTime.Now.Date.AddDays(7)
@@ -53,7 +85,10 @@ namespace OneBeyondApiIntegrationTests
             var results = repo.GetLoans();
 
             Assert.NotNull(results);
-            Assert.Equal(testBookStocks.Count, results.Count);
+            Assert.Single(results);
+            Assert.Equal(testBorrower.Name, results.Single().Borrower);
+            Assert.Contains(testBook.Name, results.Single().Books);
+            Assert.Contains(testBook2.Name, results.Single().Books);
         }
 
         [Fact]
@@ -66,9 +101,9 @@ namespace OneBeyondApiIntegrationTests
                     OnLoanTo = testBorrower,
                     LoanEndDate = DateTime.Now.Date.AddDays(7)
                 },
-                new(testBook)
+                new(testBook2)
                 {
-                    OnLoanTo = testBorrower,
+                    OnLoanTo = testBorrower2,
                     LoanEndDate = DateTime.Now.Date.AddDays(7)
                 }
             };
@@ -86,7 +121,11 @@ namespace OneBeyondApiIntegrationTests
             var results = repo.GetLoans();
 
             Assert.NotNull(results);
-            Assert.Equal(testBookStocksOnLoan.Count, results.Count);
+            Assert.Equal(testBookStocksOnLoan.Count, results.Count());
+            Assert.Equal(testBorrower.Name, results.First().Borrower);
+            Assert.Equal(testBorrower2.Name, results.Last().Borrower);
+            Assert.Contains(testBook.Name, results.First().Books);
+            Assert.Contains(testBook2.Name, results.Last().Books);
         }
     }
 }

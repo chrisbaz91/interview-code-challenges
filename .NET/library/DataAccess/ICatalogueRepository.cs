@@ -8,6 +8,6 @@ namespace OneBeyondApi.DataAccess
 
         public Task<List<BookStock>> SearchCatalogue(CatalogueSearch search);
 
-        public List<BookStock> GetLoans();
+        public IEnumerable<BorrowerLoans> GetLoans();
     }
 }

@@ -20,16 +20,31 @@ namespace OneBeyondApi.DataAccess
             return list;
         }
 
-        public List<BookStock> GetLoans()
+        public IEnumerable<BorrowerLoans> GetLoans()
         {
             using var context = new LibraryContext();
+
             var list = context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
                 .Where(x => x.LoanEndDate != null && x.OnLoanTo != null)
                 .ToList();
-            return list;
+
+            var borrowerLoans = new List<BorrowerLoans>();
+
+            var names = list.Select(x => x.OnLoanTo.Name).Distinct();
+
+            foreach(var name in names)
+            {
+                borrowerLoans.Add(
+                    new BorrowerLoans(name, 
+                        list.Where(x => x.OnLoanTo.Name == name)
+                            .Select(x => x.Book.Name)
+                    )
+                );
+            }
+            return borrowerLoans;
         }
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {

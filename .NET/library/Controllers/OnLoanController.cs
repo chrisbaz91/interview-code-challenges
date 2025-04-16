@@ -19,7 +19,7 @@ namespace OneBeyondApi.Controllers
 
         [HttpGet]
         [Route("GetLoans")]
-        public IList<BookStock> Get()
+        public IEnumerable<BorrowerLoans> Get()
         {
             return _catalogueRepository.GetLoans();
         }
