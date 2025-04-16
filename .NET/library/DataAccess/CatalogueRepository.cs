@@ -37,9 +37,9 @@ namespace OneBeyondApi.DataAccess
                     list.Where(y => y.OnLoanTo == x.OnLoanTo)
                         .Select(z => z.Book.Name)
                     )
-                    )
+                )
                 .DistinctBy(x => x.Borrower);
-            }
+        }
 
         public async Task<string> ReturnBook(Guid guid)
         {
@@ -128,6 +128,65 @@ namespace OneBeyondApi.DataAccess
 
             return resultMessage;
         }
+
+        public async Task<string> GetAvailability(LoanRequest request)
+        {
+            var borrower = await _context.Borrowers.FirstOrDefaultAsync(x => x.Name == request.Borrower);
+
+            if (borrower == null)
+            {
+                return "Error finding borrower, please try again.";
+            }
+
+            var bookStocks = (await SearchCatalogue(new CatalogueSearch(request.BookName, request.Author)))
+                            .OrderBy(x => x.LoanEndDate);
+
+            if (bookStocks == null || !bookStocks.Any())
+            {
+                return "Error finding book, please try again.";
+            }
+
+            if (!bookStocks.Where(x => x.OnLoanTo != null && x.LoanEndDate != null).Any())
+            {
+                return "Error finding loaned book, please try again.";
+            }
+
+            var reservations = await _context.Reservations
+                .Include(x => x.Book)
+                .Include(x => x.ReservedBy)
+                .Where(x => x.Book.Name == request.BookName)
+                .ToListAsync();
+
+            var currentReservation = reservations.Where(x => x.ReservedBy.Name == request.Borrower).FirstOrDefault();
+
+            if (currentReservation == null)
+            {
+                return "Error finding reservation, please try again.";
+            }
+
+            var queuePosition = reservations.Where(x => x.ReservedDate <= currentReservation.ReservedDate).Count();
+            var loanEndDate = new DateTime();
+            var availableDate = new DateTime();
+            var initialDaysToWait = 0;
+            var reservedDaysToWait = 0;
+            var totalDaysToWait = 0;
+
+            if (bookStocks.Count() == 1)
+            {
+                // queuePosition-1 to account for next reservations being able to loan at the previous loan end date
+                loanEndDate = bookStocks.Single().LoanEndDate.Value;
+                reservedDaysToWait = 7 * (queuePosition - 1);
+                initialDaysToWait = loanEndDate > DateTime.Now.Date ? (loanEndDate - DateTime.Now.Date).Days : 0;
+                totalDaysToWait = initialDaysToWait + reservedDaysToWait;
+                availableDate = DateTime.Now.Date.AddDays(totalDaysToWait);
+            }
+
+            return $"This book will be available for you " +
+                $"{(totalDaysToWait > 0
+                ? $"on {availableDate.Date.ToShortDateString()} which is {totalDaysToWait} days away!"
+                : "today!")}";
+        }
+
         public async Task<List<BookStock>> SearchCatalogue(CatalogueSearch search)
         {
             var list = _context.Catalogue

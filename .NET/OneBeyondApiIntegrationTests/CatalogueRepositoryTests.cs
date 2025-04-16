@@ -221,5 +221,78 @@ namespace OneBeyondApiIntegrationTests
             Assert.Contains("reservation", result);
             Assert.Contains("position 1", result);
         }
+
+        [Fact]
+        public async Task GetAvailability_OneExistingReservationForOneBookStockOnLoanUntilToday_ReturnsAvailableDateAsToday()
+        {
+            await InsertAsync(testBorrower2);
+
+            var testBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date
+            };
+            await InsertAsync(testBookStock);
+
+            var reservation = new Reservation(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7));
+            await InsertAsync(reservation);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower2.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains("today", result);
+        }
+
+        [Fact]
+        public async Task GetAvailability_OneExistingReservationForOneBookStockOnLoanForAWeek_ReturnsAvailableDateAsCurrentLoanEndDatePlusAWeek()
+        {
+            await InsertAsync(testBorrower2);
+
+            var testBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(7)
+            };
+            await InsertAsync(testBookStock);
+
+            var reservation = new Reservation(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7));
+            await InsertAsync(reservation);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower2.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains(testBookStock.LoanEndDate.Value.ToShortDateString(), result);
+            Assert.Contains("7 days away", result);
+        }
+
+        [Fact]
+        public async Task GetAvailability_MultipleExistingReservationsForOneBookStockRequestForLatestReservation_ReturnsAvailableDateAsCurrentLoanEndDatePlusMultipleWeeks()
+        {
+            var testBorrower3 = new Borrower("TestBorrower3", "test@borrower3.com");
+            var testBorrower4 = new Borrower("TestBorrower4", "test@borrower4.com");
+            var testBorrower5 = new Borrower("TestBorrower5", "test@borrower5.com");
+            await InsertRangeAsync([testBorrower2, testBorrower3, testBorrower4, testBorrower5]);
+
+            var testBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date
+            };
+            await InsertAsync(testBookStock);
+
+            var reservations = new List<Reservation>(){
+                new(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7)),
+                new(testBook.Id, testBorrower3.Id, DateTime.Now.Date.AddDays(-5)),
+                new(testBook.Id, testBorrower4.Id, DateTime.Now.Date.AddDays(-3)),
+                new(testBook.Id, testBorrower5.Id, DateTime.Now.Date.AddDays(-1))
+            };
+            await InsertRangeAsync(reservations);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower5.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains(testBookStock.LoanEndDate.Value.AddDays((reservations.Count - 1) * 7).Date.ToShortDateString(), result);
+            Assert.Contains($"{(reservations.Count - 1) * 7} days away", result);
+        }
     }
 }

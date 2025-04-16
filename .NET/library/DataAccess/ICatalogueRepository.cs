@@ -13,5 +13,7 @@ namespace OneBeyondApi.DataAccess
         public Task<string> ReturnBook(Guid guid);
 
         public Task<string> LoanBook(LoanRequest request);
+
+        public Task<string> GetAvailability(LoanRequest request);
     }
 }
