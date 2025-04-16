@@ -180,6 +180,20 @@ namespace OneBeyondApi.DataAccess
                 totalDaysToWait = initialDaysToWait + reservedDaysToWait;
                 availableDate = DateTime.Now.Date.AddDays(totalDaysToWait);
             }
+            else
+            {
+                // two queues for two stocks
+                // half queue position rounded up to get single queue position
+                reservedDaysToWait = 7 * ((int)Math.Ceiling((double)queuePosition / 2) - 1);
+                var earlierBookStockDate = bookStocks.First().LoanEndDate.Value;
+                var laterBookStockDate = bookStocks.Last().LoanEndDate.Value;
+                // odd position gets earlier stock, even position gets later stock
+                var earlier = queuePosition % 2 != 0;
+                loanEndDate = earlier ? earlierBookStockDate : laterBookStockDate;
+                initialDaysToWait = loanEndDate > DateTime.Now.Date ? (loanEndDate - DateTime.Now.Date).Days : 0;
+                totalDaysToWait = initialDaysToWait + reservedDaysToWait;
+                availableDate = DateTime.Now.Date.AddDays(totalDaysToWait);
+            }
 
             return $"This book will be available for you " +
                 $"{(totalDaysToWait > 0

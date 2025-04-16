@@ -298,5 +298,137 @@ namespace OneBeyondApiIntegrationTests
             Assert.Contains(testBookStock.LoanEndDate.Value.AddDays(reservedDays).Date.ToShortDateString(), result);
             Assert.Contains($"{reservedDays} days away", result);
         }
+
+        [Fact]
+        public async Task GetAvailability_OneExistingReservationForTwoBookStocksOnLoanUntilToday_ReturnsAvailableDateAsToday()
+        {
+            await InsertAsync(testBorrower2);
+
+            var testBookStock1 = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date
+            };
+            var testBookStock2 = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(1)
+            };
+            await InsertRangeAsync([testBookStock1, testBookStock2]);
+
+            var reservation = new Reservation(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7));
+            await InsertAsync(reservation);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower2.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains("today", result);
+        }
+
+        [Fact]
+        public async Task GetAvailability_OneExistingReservationForTwoBookStocksOnLoanForAWeek_ReturnsAvailableDateAsEarlierLoanEndDate()
+        {
+            await InsertAsync(testBorrower2);
+
+            var loanedDays = 7;
+
+            var earlierBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays)
+            };
+            var laterBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays + 1)
+            };
+            await InsertRangeAsync([earlierBookStock, laterBookStock]);
+
+            var reservation = new Reservation(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7));
+            await InsertAsync(reservation);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower2.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains(earlierBookStock.LoanEndDate.Value.ToShortDateString(), result);
+            Assert.Contains($"{loanedDays} days away", result);
+        }
+
+        [Fact]
+        public async Task GetAvailability_MultipleExistingReservationsForTwoBookStocksRequestForLatestReservationInOddPosition_ReturnsAvailableDateAsEarlierLoanEndDatePlusMultipleWeeks()
+        {
+            var loanedDays = 7;
+
+            var testBorrower3 = new Borrower("TestBorrower3", "test@borrower3.com");
+            var testBorrower4 = new Borrower("TestBorrower4", "test@borrower4.com");
+            var testBorrower5 = new Borrower("TestBorrower5", "test@borrower5.com");
+            await InsertRangeAsync([testBorrower2, testBorrower3, testBorrower4, testBorrower5]);
+
+            var earlierBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays)
+            };
+            var laterBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays + 1)
+            };
+            await InsertRangeAsync([earlierBookStock, laterBookStock]);
+
+            var reservations = new List<Reservation>(){
+                new(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7)),
+                new(testBook.Id, testBorrower3.Id, DateTime.Now.Date.AddDays(-5)),
+                new(testBook.Id, testBorrower4.Id, DateTime.Now.Date.AddDays(-3))
+            };
+            await InsertRangeAsync(reservations);
+
+            var reservedDays = 7 * ((int)Math.Ceiling((double)reservations.Count / 2) - 1);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower4.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains(earlierBookStock.LoanEndDate.Value.AddDays(reservedDays).Date.ToShortDateString(), result);
+            Assert.Contains($"{loanedDays + reservedDays} days away", result);
+        }
+
+        [Fact]
+        public async Task GetAvailability_MultipleExistingReservationsForTwoBookStocksRequestForLatestReservationInEvenPosition_ReturnsAvailableDateAsLaterLoanEndDatePlusMultipleWeeks()
+        {
+            var loanedDays = 7;
+
+            var testBorrower3 = new Borrower("TestBorrower3", "test@borrower3.com");
+            var testBorrower4 = new Borrower("TestBorrower4", "test@borrower4.com");
+            var testBorrower5 = new Borrower("TestBorrower5", "test@borrower5.com");
+            await InsertRangeAsync([testBorrower2, testBorrower3, testBorrower4, testBorrower5]);
+
+            var earlierBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays)
+            };
+            var laterBookStock = new BookStock(testBook)
+            {
+                OnLoanTo = testBorrower,
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays + 1)
+            };
+            await InsertRangeAsync([earlierBookStock, laterBookStock]);
+
+            var reservations = new List<Reservation>(){
+                new(testBook.Id, testBorrower2.Id, DateTime.Now.Date.AddDays(-7)),
+                new(testBook.Id, testBorrower3.Id, DateTime.Now.Date.AddDays(-5)),
+                new(testBook.Id, testBorrower4.Id, DateTime.Now.Date.AddDays(-3)),
+                new(testBook.Id, testBorrower5.Id, DateTime.Now.Date.AddDays(-1))
+            };
+            await InsertRangeAsync(reservations);
+
+            var reservedDays = 7 * ((int)Math.Ceiling((double)reservations.Count / 2) - 1);
+
+            var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower5.Name);
+            var result = await repo.GetAvailability(request);
+
+            Assert.Contains(laterBookStock.LoanEndDate.Value.AddDays(reservedDays).Date.ToShortDateString(), result);
+            Assert.Contains($"{loanedDays + 1 + reservedDays} days away", result);
+        }
     }
 }
