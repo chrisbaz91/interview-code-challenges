@@ -18,7 +18,7 @@ namespace OneBeyondApiIntegrationTests
             context.RemoveRange(context.Books);
             context.RemoveRange(context.Borrowers);
             context.RemoveRange(context.Catalogue);
-            //context.RemoveRange(context.Reservations);
+            context.RemoveRange(context.Reservations);
             await context.SaveChangesAsync();
         }
 
