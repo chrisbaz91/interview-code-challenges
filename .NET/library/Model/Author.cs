@@ -1,8 +1,7 @@
 ﻿namespace OneBeyondApi.Model
 {
-    public class Author(string name)
+    public class Author(string name) : Entity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; } = name;
     }
 }

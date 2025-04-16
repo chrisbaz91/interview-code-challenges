@@ -1,6 +1,6 @@
 ﻿namespace OneBeyondApi.Model
 {
-    public class Book
+    public class Book : Entity
     {
         public Book()
         {
@@ -25,7 +25,6 @@
             Format = format;
         }
 
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public Author Author { get; set; }
         public BookFormat Format { get; set; }
