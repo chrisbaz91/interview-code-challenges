@@ -244,14 +244,16 @@ namespace OneBeyondApiIntegrationTests
         }
 
         [Fact]
-        public async Task GetAvailability_OneExistingReservationForOneBookStockOnLoanForAWeek_ReturnsAvailableDateAsCurrentLoanEndDatePlusAWeek()
+        public async Task GetAvailability_OneExistingReservationForOneBookStockOnLoanForAWeek_ReturnsAvailableDateAsLoanEndDate()
         {
             await InsertAsync(testBorrower2);
+
+            var loanedDays = 7;
 
             var testBookStock = new BookStock(testBook)
             {
                 OnLoanTo = testBorrower,
-                LoanEndDate = DateTime.Now.Date.AddDays(7)
+                LoanEndDate = DateTime.Now.Date.AddDays(loanedDays)
             };
             await InsertAsync(testBookStock);
 
@@ -262,11 +264,11 @@ namespace OneBeyondApiIntegrationTests
             var result = await repo.GetAvailability(request);
 
             Assert.Contains(testBookStock.LoanEndDate.Value.ToShortDateString(), result);
-            Assert.Contains("7 days away", result);
+            Assert.Contains($"{loanedDays} days away", result);
         }
 
         [Fact]
-        public async Task GetAvailability_MultipleExistingReservationsForOneBookStockRequestForLatestReservation_ReturnsAvailableDateAsCurrentLoanEndDatePlusMultipleWeeks()
+        public async Task GetAvailability_MultipleExistingReservationsForOneBookStockRequestForLatestReservation_ReturnsAvailableDateAsLoanEndDatePlusMultipleWeeks()
         {
             var testBorrower3 = new Borrower("TestBorrower3", "test@borrower3.com");
             var testBorrower4 = new Borrower("TestBorrower4", "test@borrower4.com");
@@ -288,11 +290,13 @@ namespace OneBeyondApiIntegrationTests
             };
             await InsertRangeAsync(reservations);
 
+            var reservedDays = (reservations.Count - 1) * 7;
+
             var request = new LoanRequest(testBook.Name, testBook.Author.Name, testBorrower5.Name);
             var result = await repo.GetAvailability(request);
 
-            Assert.Contains(testBookStock.LoanEndDate.Value.AddDays((reservations.Count - 1) * 7).Date.ToShortDateString(), result);
-            Assert.Contains($"{(reservations.Count - 1) * 7} days away", result);
+            Assert.Contains(testBookStock.LoanEndDate.Value.AddDays(reservedDays).Date.ToShortDateString(), result);
+            Assert.Contains($"{reservedDays} days away", result);
         }
     }
 }
