@@ -20,16 +20,16 @@ namespace OneBeyondApi.DataAccess
             return list;
         }
 
-        public IEnumerable<BorrowerLoans> GetLoans()
+        public async Task<IEnumerable<BorrowerLoans>> GetLoans()
         {
             using var context = new LibraryContext();
 
-            var list = context.Catalogue
+            var list = await context.Catalogue
                 .Include(x => x.Book)
                 .ThenInclude(x => x.Author)
                 .Include(x => x.OnLoanTo)
                 .Where(x => x.LoanEndDate != null && x.OnLoanTo != null)
-                .ToList();
+                .ToListAsync();
 
             return list.Select(x =>
                 new BorrowerLoans(x.OnLoanTo.Name,

@@ -19,9 +19,9 @@ namespace OneBeyondApi.Controllers
 
         [HttpGet]
         [Route("GetLoans")]
-        public IEnumerable<BorrowerLoans> Get()
+        public async Task<IEnumerable<BorrowerLoans>> Get()
         {
-            return _catalogueRepository.GetLoans();
+            return await _catalogueRepository.GetLoans();
         }
     }
 }
