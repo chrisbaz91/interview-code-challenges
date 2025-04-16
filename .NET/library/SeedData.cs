@@ -1,6 +1,5 @@
 ﻿using OneBeyondApi.DataAccess;
 using OneBeyondApi.Model;
-using System.Threading.Tasks;
 
 namespace OneBeyondApi
 {
