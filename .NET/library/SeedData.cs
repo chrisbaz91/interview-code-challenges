@@ -128,6 +128,12 @@ namespace OneBeyondApi
                 LoanEndDate = DateTime.Now.Date.AddDays(5)
             };
 
+            var civilWarBookStock3 = new BookStock(civilWarBook)
+            {
+                OnLoanTo = daveSmith,
+                LoanEndDate = DateTime.Now.Date.AddDays(3)
+            };
+
             var avxBookStock = new BookStock(avxBook)
             {
                 OnLoanTo = null,
@@ -160,7 +166,7 @@ namespace OneBeyondApi
 
             await context.Borrowers.AddRangeAsync(daveSmith, lianaJames, chrisBarrett);
 
-            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan, bookOnLoanUntilNextWeek, rustBookStock, civilWarBookStock, civilWarBookStock2, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
+            await context.Catalogue.AddRangeAsync(bookOnLoanUntilToday, bookNotOnLoan, bookOnLoanUntilNextWeek, rustBookStock, civilWarBookStock, civilWarBookStock2, civilWarBookStock3, avxBookStock, avxBookStock2, spiderManBookStock, infinityBookStock);
 
             await context.SaveChangesAsync();
 
